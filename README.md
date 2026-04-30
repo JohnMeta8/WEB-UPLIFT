@@ -1,3 +1,3 @@
-# WEB-UPLIFT
+# Uplift
 
 Web app de rééducation.
