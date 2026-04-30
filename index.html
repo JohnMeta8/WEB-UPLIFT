@@ -1,0 +1,2090 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Kiné-Main Master</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #07090d;
+    --bg-1: #0d1117;
+    --bg-2: #141b24;
+    --bg-3: #1c2530;
+    --line: rgba(255,255,255,0.06);
+    --line-strong: rgba(255,255,255,0.12);
+    --text: #e6edf3;
+    --text-dim: #8a95a5;
+    --text-faint: #5a6678;
+    --indigo: #6366f1;
+    --indigo-glow: #818cf8;
+    --emerald: #10b981;
+    --emerald-glow: #34d399;
+    --amber: #f59e0b;
+    --amber-glow: #fbbf24;
+    --danger: #ef4444;
+    --radius: 14px;
+    --radius-lg: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+  body {
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-0);
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Ambient background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(99,102,241,0.15), transparent 50%),
+      radial-gradient(ellipse 60% 40% at 100% 100%, rgba(16,185,129,0.08), transparent 50%),
+      radial-gradient(ellipse 40% 30% at 0% 80%, rgba(245,158,11,0.06), transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0 0.5 0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+    mix-blend-mode: overlay;
+  }
+
+  #app { position: relative; z-index: 1; min-height: 100vh; min-height: 100dvh; }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px 12px;
+    padding-top: max(18px, env(safe-area-inset-top));
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--indigo), var(--emerald));
+    display: grid; place-items: center;
+    box-shadow: 0 0 20px rgba(99,102,241,0.4);
+    position: relative;
+  }
+  .brand-mark::after {
+    content: '';
+    position: absolute; inset: 2px;
+    background: var(--bg-0);
+    border-radius: 6px;
+  }
+  .brand-mark svg { position: relative; z-index: 1; }
+  .brand-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .brand-name span { color: var(--text-dim); }
+  .topbar-right { display: flex; gap: 8px; }
+  .icon-btn {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    display: grid; place-items: center;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover, .icon-btn.active {
+    color: var(--text);
+    border-color: var(--line-strong);
+    background: var(--bg-3);
+  }
+
+  /* ===== MAIN CONTENT ===== */
+  .view {
+    padding: 8px 20px 100px;
+    max-width: 900px;
+    margin: 0 auto;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Hero / daily objective */
+  .hero {
+    background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(16,185,129,0.04));
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 60%; height: 200%;
+    background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 60%);
+    pointer-events: none;
+  }
+  .hero-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+  }
+  .hero-title {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .hero-sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .hero-stat { display: flex; align-items: baseline; gap: 6px; }
+  .hero-stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .hero-stat-val.emerald { color: var(--emerald-glow); }
+  .hero-stat-val.amber { color: var(--amber-glow); }
+  .hero-stat-val.indigo { color: var(--indigo-glow); }
+  .hero-stat-label {
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .progress-bar {
+    height: 8px;
+    background: var(--bg-2);
+    border-radius: 999px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--indigo), var(--emerald));
+    border-radius: 999px;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 16px rgba(99,102,241,0.5);
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.08em;
+  }
+
+  /* Section header */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 28px 0 14px;
+  }
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .section-title .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--emerald);
+    margin-right: 8px;
+    box-shadow: 0 0 8px var(--emerald);
+    vertical-align: middle;
+  }
+
+  /* Exercise cards */
+  .exo-grid {
+    display: grid;
+    gap: 14px;
+  }
+  @media (min-width: 640px) {
+    .exo-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .exo-card {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  .exo-card:active { transform: scale(0.98); }
+  .exo-card:hover {
+    border-color: var(--line-strong);
+    background: var(--bg-2);
+  }
+  .exo-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--accent-color);
+    opacity: 0.8;
+  }
+  .exo-card[data-color="indigo"] { --accent-color: var(--indigo); }
+  .exo-card[data-color="emerald"] { --accent-color: var(--emerald); }
+  .exo-card[data-color="amber"] { --accent-color: var(--amber); }
+  .exo-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle at top right, var(--accent-color), transparent 70%);
+    opacity: 0.08;
+    pointer-events: none;
+  }
+  .exo-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .exo-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--bg-3);
+    display: grid; place-items: center;
+    color: var(--accent-color);
+    flex-shrink: 0;
+  }
+  .exo-title-wrap { flex: 1; min-width: 0; }
+  .exo-name {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .exo-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .exo-desc {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .exo-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+  }
+  .exo-best {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.08em;
+  }
+  .exo-best strong { color: var(--accent-color); font-weight: 700; }
+  .exo-play {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  /* ===== DIFFICULTY MODAL ===== */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(7,9,13,0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 100;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeIn 0.2s;
+  }
+  .modal-backdrop.active { display: flex; }
+  @media (min-width: 640px) { .modal-backdrop { align-items: center; } }
+  .modal {
+    background: var(--bg-1);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 24px 20px;
+    width: 100%;
+    max-width: 520px;
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
+  @media (min-width: 640px) { .modal { border-radius: var(--radius-lg); } }
+  @keyframes slideUp {
+    from { transform: translateY(40px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .modal-sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  .level-options { display: flex; flex-direction: column; gap: 10px; }
+  .level-opt {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .level-opt:hover, .level-opt:active {
+    border-color: var(--accent-color, var(--line-strong));
+    background: var(--bg-3);
+  }
+  .level-num {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--bg-3);
+    display: grid; place-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .level-opt[data-lvl="1"] .level-num { color: var(--emerald); }
+  .level-opt[data-lvl="2"] .level-num { color: var(--amber); }
+  .level-opt[data-lvl="3"] .level-num { color: var(--danger); }
+  .level-info { flex: 1; }
+  .level-name { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+  .level-desc { font-size: 12.5px; color: var(--text-dim); }
+  .modal-cancel {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    padding: 12px;
+    border-radius: var(--radius);
+    margin-top: 14px;
+    font-family: inherit;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  /* ===== STATS VIEW ===== */
+  .stats-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 22px;
+  }
+  .stat-card {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-card-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+  .stat-card:nth-child(1) .stat-card-val { color: var(--indigo-glow); }
+  .stat-card:nth-child(2) .stat-card-val { color: var(--emerald-glow); }
+  .stat-card:nth-child(3) .stat-card-val { color: var(--amber-glow); }
+  .stat-card-label {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .history-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--bg-3);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .history-item[data-color="indigo"] .history-icon { color: var(--indigo-glow); }
+  .history-item[data-color="emerald"] .history-icon { color: var(--emerald-glow); }
+  .history-item[data-color="amber"] .history-icon { color: var(--amber-glow); }
+  .history-info { flex: 1; min-width: 0; }
+  .history-name { font-weight: 500; font-size: 14px; margin-bottom: 2px; }
+  .history-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 0.06em;
+  }
+  .history-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 16px;
+    text-align: right;
+  }
+  .history-score small {
+    display: block;
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--text-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-faint);
+    font-size: 14px;
+  }
+
+  /* ===== GAME VIEW ===== */
+  .game-view {
+    position: fixed;
+    inset: 0;
+    background: var(--bg-0);
+    z-index: 50;
+    display: none;
+    flex-direction: column;
+  }
+  .game-view.active { display: flex; }
+  .game-view::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center, rgba(99,102,241,0.08), transparent 70%);
+    pointer-events: none;
+  }
+  .game-hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    padding-top: max(14px, env(safe-area-inset-top));
+    background: rgba(7,9,13,0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    z-index: 2;
+  }
+  .hud-group { display: flex; gap: 18px; align-items: center; }
+  .hud-item {
+    display: flex;
+    flex-direction: column;
+  }
+  .hud-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .hud-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  #hud-score { color: var(--indigo-glow); }
+  #hud-time { color: var(--amber-glow); }
+  #hud-combo { color: var(--emerald-glow); }
+  .hud-combo-wrap.active #hud-combo { animation: pulse 0.4s; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+  .quit-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--text-dim);
+    display: grid; place-items: center;
+    cursor: pointer;
+  }
+
+  #game-canvas {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  /* Game elements */
+  .target {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--indigo-glow), var(--indigo));
+    box-shadow: 0 0 30px rgba(99,102,241,0.6), inset 0 0 20px rgba(255,255,255,0.2);
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    animation: targetIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: grid; place-items: center;
+  }
+  .target::after {
+    content: '';
+    width: 40%;
+    height: 40%;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    box-shadow: 0 0 10px rgba(255,255,255,0.8);
+  }
+  .target.hit { animation: targetHit 0.3s ease-out forwards; }
+  .target.miss { animation: targetMiss 0.3s ease-out forwards; }
+  @keyframes targetIn {
+    from { transform: translate(-50%, -50%) scale(0); }
+    to { transform: translate(-50%, -50%) scale(1); }
+  }
+  @keyframes targetHit {
+    to { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
+  }
+  @keyframes targetMiss {
+    to { transform: translate(-50%, -50%) scale(0.5); opacity: 0; filter: grayscale(1); }
+  }
+
+  /* Precision module */
+  .puck {
+    position: absolute;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--amber-glow), var(--amber));
+    box-shadow: 0 0 30px rgba(245,158,11,0.5), inset 0 0 15px rgba(255,255,255,0.2);
+    transform: translate(-50%, -50%);
+    cursor: grab;
+    transition: box-shadow 0.2s;
+    display: grid; place-items: center;
+    color: var(--bg-0);
+  }
+  .puck:active { cursor: grabbing; }
+  .puck.dragging { box-shadow: 0 0 50px rgba(245,158,11,0.8), inset 0 0 20px rgba(255,255,255,0.3); }
+  .precision-target {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px dashed var(--emerald);
+    transform: translate(-50%, -50%);
+    display: grid; place-items: center;
+    animation: pulseTarget 2s ease-in-out infinite;
+  }
+  .precision-target::before {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--emerald);
+    opacity: 0.5;
+  }
+  .precision-target.holding {
+    border-color: var(--emerald-glow);
+    border-style: solid;
+    background: rgba(16,185,129,0.15);
+    box-shadow: 0 0 40px rgba(16,185,129,0.4);
+  }
+  @keyframes pulseTarget {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+  .hold-progress {
+    position: absolute;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    pointer-events: none;
+  }
+
+  /* Trace module */
+  #trace-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Particles */
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleOut 0.8s ease-out forwards;
+  }
+  @keyframes particleOut {
+    to { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+  }
+
+  /* Game over */
+  .game-over {
+    position: absolute;
+    inset: 0;
+    background: rgba(7,9,13,0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    padding: 20px;
+  }
+  .game-over.active { display: flex; animation: fadeIn 0.4s; }
+  .game-over-card {
+    background: var(--bg-1);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-lg);
+    padding: 32px 28px;
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-over-card::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: 50%;
+    transform: translateX(-50%);
+    width: 200%; height: 100%;
+    background: radial-gradient(ellipse, rgba(99,102,241,0.2), transparent 60%);
+    pointer-events: none;
+  }
+  .go-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 12px;
+  }
+  .go-score {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 56px;
+    font-weight: 700;
+    line-height: 1;
+    background: linear-gradient(135deg, var(--indigo-glow), var(--emerald-glow));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+  }
+  .go-xp {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--amber-glow);
+    margin-bottom: 24px;
+  }
+  .go-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .go-stat {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px;
+  }
+  .go-stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .go-stat-label {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .go-actions { display: flex; gap: 10px; }
+  .btn {
+    flex: 1;
+    padding: 14px;
+    border-radius: var(--radius);
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--indigo), var(--indigo-glow));
+    color: white;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+  }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-secondary {
+    background: var(--bg-2);
+    color: var(--text);
+    border: 1px solid var(--line);
+  }
+
+  /* Countdown */
+  .countdown {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(7,9,13,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 5;
+  }
+  .countdown.active { display: flex; }
+  .countdown-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 100px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--indigo-glow), var(--emerald-glow));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: countdownPulse 1s ease-out;
+  }
+  @keyframes countdownPulse {
+    0% { transform: scale(0.5); opacity: 0; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
+  }
+
+  /* Floating score */
+  .float-score {
+    position: absolute;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--emerald-glow);
+    pointer-events: none;
+    animation: floatUp 1s ease-out forwards;
+    transform: translate(-50%, -50%);
+    text-shadow: 0 0 12px currentColor;
+  }
+  @keyframes floatUp {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    100% { opacity: 0; transform: translate(-50%, -120%) scale(1); }
+  }
+
+  /* Combo banner */
+  .combo-banner {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--emerald-glow);
+    text-shadow: 0 0 20px currentColor;
+    pointer-events: none;
+    opacity: 0;
+    letter-spacing: 0.1em;
+    z-index: 3;
+  }
+  .combo-banner.show {
+    animation: comboIn 1.5s ease-out;
+  }
+  @keyframes comboIn {
+    0% { opacity: 0; transform: translateX(-50%) scale(0.5); }
+    20% { opacity: 1; transform: translateX(-50%) scale(1.1); }
+    80% { opacity: 1; transform: translateX(-50%) scale(1); }
+    100% { opacity: 0; transform: translateX(-50%) scale(1); }
+  }
+
+  /* Level-up toast */
+  .toast {
+    position: fixed;
+    top: max(20px, env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%) translateY(-200%);
+    background: linear-gradient(135deg, var(--indigo), var(--emerald));
+    padding: 14px 24px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 14px;
+    z-index: 200;
+    box-shadow: 0 10px 40px rgba(99,102,241,0.5);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M4 10V4a1.5 1.5 0 013 0v4M7 8V3a1.5 1.5 0 013 0v5M10 8V4a1.5 1.5 0 013 0v6a5 5 0 01-5 5 5 5 0 01-5-5V7a1.5 1.5 0 013 0v3"
+            stroke="#e6edf3" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-name">KINÉ-MAIN<br><span>MASTER v1.0</span></div>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn active" id="nav-home" aria-label="Atelier">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      </button>
+      <button class="icon-btn" id="nav-stats" aria-label="Statistiques">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18M7 14l4-4 4 4 6-6"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- HOME / ATELIER -->
+  <main class="view" id="view-home">
+    <div class="hero">
+      <div class="hero-label">Atelier · Session du jour</div>
+      <div class="hero-title" id="greeting">Bon retour</div>
+      <div class="hero-sub">Chaque mouvement compte. Reprenons où tu t'étais arrêté.</div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-val indigo" id="stat-xp">0</span><span class="hero-stat-label">XP Total</span></div>
+        <div class="hero-stat"><span class="hero-stat-val emerald" id="stat-streak">0</span><span class="hero-stat-label">Jours</span></div>
+        <div class="hero-stat"><span class="hero-stat-val amber" id="stat-level">1</span><span class="hero-stat-label">Rang</span></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="daily-progress" style="width: 0%"></div></div>
+      <div class="progress-meta">
+        <span id="daily-current">0 / 3 séances aujourd'hui</span>
+        <span id="daily-status">· En cours</span>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title"><span class="dot"></span>Modules de rééducation</div>
+    </div>
+
+    <div class="exo-grid">
+      <div class="exo-card" data-color="indigo" data-exo="speed">
+        <div class="exo-head">
+          <div class="exo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="exo-title-wrap">
+            <div class="exo-name">Vitesse</div>
+            <div class="exo-tag">Isolation · Doigts</div>
+          </div>
+        </div>
+        <div class="exo-desc">Touche les cibles qui apparaissent. Travaille la réactivité et le mouvement indépendant de chaque doigt.</div>
+        <div class="exo-footer">
+          <div class="exo-best">MEILLEUR · <strong id="best-speed">—</strong></div>
+          <div class="exo-play">Démarrer →</div>
+        </div>
+      </div>
+
+      <div class="exo-card" data-color="amber" data-exo="precision">
+        <div class="exo-head">
+          <div class="exo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9" stroke-dasharray="2 2"/><path d="M12 2v4M12 18v4M22 12h-4M6 12H2"/><circle cx="12" cy="12" r="2" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="exo-title-wrap">
+            <div class="exo-name">Précision</div>
+            <div class="exo-tag">Pince · Contrôle</div>
+          </div>
+        </div>
+        <div class="exo-desc">Glisse l'objet vers sa cible et maintiens la position. Exerce la pince pouce-index et le contrôle moteur fin.</div>
+        <div class="exo-footer">
+          <div class="exo-best">MEILLEUR · <strong id="best-precision">—</strong></div>
+          <div class="exo-play">Démarrer →</div>
+        </div>
+      </div>
+
+      <div class="exo-card" data-color="emerald" data-exo="trace">
+        <div class="exo-head">
+          <div class="exo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 17c2-4 4-4 6-2s4 2 6-2 4-4 6-2"/><circle cx="3" cy="17" r="1.5" fill="currentColor"/><circle cx="21" cy="11" r="1.5" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="exo-title-wrap">
+            <div class="exo-name">Tracé</div>
+            <div class="exo-tag">Fluidité · Coordination</div>
+          </div>
+        </div>
+        <div class="exo-desc">Suis le chemin avec ton doigt sans le quitter. Travaille la graphomotricité et la fluidité du geste.</div>
+        <div class="exo-footer">
+          <div class="exo-best">MEILLEUR · <strong id="best-trace">—</strong></div>
+          <div class="exo-play">Démarrer →</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- STATS VIEW -->
+  <main class="view hidden" id="view-stats">
+    <div class="hero">
+      <div class="hero-label">Progression · Cumul total</div>
+      <div class="hero-title">Ton parcours</div>
+      <div class="hero-sub">Chaque séance renforce la connexion cerveau-main.</div>
+    </div>
+
+    <div class="stats-summary">
+      <div class="stat-card"><div class="stat-card-val" id="stats-total-xp">0</div><div class="stat-card-label">XP Total</div></div>
+      <div class="stat-card"><div class="stat-card-val" id="stats-sessions">0</div><div class="stat-card-label">Séances</div></div>
+      <div class="stat-card"><div class="stat-card-val" id="stats-streak">0</div><div class="stat-card-label">Streak</div></div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title"><span class="dot"></span>Historique des séances</div>
+    </div>
+
+    <div class="history-list" id="history-list">
+      <div class="empty-state">Aucune séance pour le moment.<br>Commence ton premier exercice pour voir ton historique.</div>
+    </div>
+  </main>
+</div>
+
+<!-- DIFFICULTY MODAL -->
+<div class="modal-backdrop" id="modal-difficulty">
+  <div class="modal">
+    <div class="modal-title" id="modal-exo-name">Choisir le niveau</div>
+    <div class="modal-sub">Adapte l'intensité à ta forme du jour.</div>
+    <div class="level-options">
+      <div class="level-opt" data-lvl="1">
+        <div class="level-num">01</div>
+        <div class="level-info">
+          <div class="level-name">Débutant</div>
+          <div class="level-desc">Grandes cibles, tolérance élevée, rythme lent</div>
+        </div>
+      </div>
+      <div class="level-opt" data-lvl="2">
+        <div class="level-num">02</div>
+        <div class="level-info">
+          <div class="level-name">Intermédiaire</div>
+          <div class="level-desc">Taille standard, vitesse modérée</div>
+        </div>
+      </div>
+      <div class="level-opt" data-lvl="3">
+        <div class="level-num">03</div>
+        <div class="level-info">
+          <div class="level-name">Expert</div>
+          <div class="level-desc">Petites cibles, haute précision et rapidité</div>
+        </div>
+      </div>
+    </div>
+    <button class="modal-cancel" id="modal-cancel">Annuler</button>
+  </div>
+</div>
+
+<!-- GAME VIEW -->
+<div class="game-view" id="game-view">
+  <div class="game-hud">
+    <div class="hud-group">
+      <div class="hud-item"><div class="hud-label">Score</div><div class="hud-val" id="hud-score">0</div></div>
+      <div class="hud-item hud-combo-wrap" id="combo-wrap"><div class="hud-label">Combo</div><div class="hud-val" id="hud-combo">×1</div></div>
+    </div>
+    <div class="hud-group">
+      <div class="hud-item" style="align-items: flex-end;"><div class="hud-label">Temps</div><div class="hud-val" id="hud-time">60</div></div>
+      <button class="quit-btn" id="quit-btn" aria-label="Quitter">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="game-canvas">
+    <div class="countdown" id="countdown"><div class="countdown-num" id="countdown-num">3</div></div>
+    <div class="combo-banner" id="combo-banner"></div>
+    <svg id="trace-svg" class="hidden"></svg>
+    <div class="game-over" id="game-over">
+      <div class="game-over-card">
+        <div class="go-label">Session terminée</div>
+        <div class="go-score" id="go-score">0</div>
+        <div class="go-xp" id="go-xp">+0 XP</div>
+        <div class="go-stats">
+          <div class="go-stat"><div class="go-stat-val" id="go-accuracy">0%</div><div class="go-stat-label">Précision</div></div>
+          <div class="go-stat"><div class="go-stat-val" id="go-combo">×1</div><div class="go-stat-label">Meilleur combo</div></div>
+        </div>
+        <div class="go-actions">
+          <button class="btn btn-secondary" id="go-quit">Quitter</button>
+          <button class="btn btn-primary" id="go-replay">Rejouer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// AUDIO ENGINE — synth bio-feedback (no external assets)
+// ============================================================
+const Audio = (() => {
+  let ctx = null;
+  const init = () => {
+    if (!ctx) {
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e) { ctx = null; }
+    }
+    if (ctx && ctx.state === 'suspended') ctx.resume();
+  };
+  const tone = (freq, dur = 0.15, type = 'sine', gain = 0.15) => {
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0, ctx.currentTime);
+    g.gain.linearRampToValueAtTime(gain, ctx.currentTime + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + dur);
+  };
+  // Pentatonic notes for harmonious success sounds
+  const notes = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50]; // C5 D5 E5 G5 A5 C6
+  let noteIdx = 0;
+  return {
+    init,
+    success(combo = 1) {
+      init();
+      const note = notes[Math.min(noteIdx, notes.length - 1)];
+      tone(note, 0.15, 'triangle', 0.12);
+      if (combo > 1) tone(note * 1.5, 0.1, 'sine', 0.06);
+      noteIdx = Math.min(noteIdx + 1, notes.length - 1);
+    },
+    fail() {
+      init();
+      tone(110, 0.2, 'sawtooth', 0.08);
+      if (navigator.vibrate) navigator.vibrate(60);
+    },
+    resetCombo() { noteIdx = 0; },
+    tick() { init(); tone(1200, 0.04, 'sine', 0.05); },
+    countdown() { init(); tone(440, 0.1, 'sine', 0.1); },
+    go() { init(); tone(660, 0.25, 'triangle', 0.15); },
+    levelUp() {
+      init();
+      [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+        setTimeout(() => tone(f, 0.2, 'triangle', 0.12), i * 80);
+      });
+    }
+  };
+})();
+
+// ============================================================
+// STORAGE — persistent across sessions
+// ============================================================
+const Store = {
+  cache: {},
+  async load() {
+    try {
+      const keys = ['profile', 'history', 'bests', 'daily'];
+      for (const k of keys) {
+        try {
+          const r = await window.storage.get(k);
+          this.cache[k] = r ? JSON.parse(r.value) : null;
+        } catch(e) { this.cache[k] = null; }
+      }
+    } catch(e) {}
+    if (!this.cache.profile) this.cache.profile = { xp: 0, level: 1, streak: 0, lastSession: null };
+    if (!this.cache.history) this.cache.history = [];
+    if (!this.cache.bests) this.cache.bests = {};
+    if (!this.cache.daily) this.cache.daily = { date: '', count: 0 };
+  },
+  async save(key) {
+    try { await window.storage.set(key, JSON.stringify(this.cache[key])); } catch(e) {}
+  },
+  get(k) { return this.cache[k]; }
+};
+
+// ============================================================
+// APP STATE
+// ============================================================
+const EXO_META = {
+  speed:     { name: 'Vitesse',   color: 'indigo',  tag: 'Isolation' },
+  precision: { name: 'Précision', color: 'amber',   tag: 'Contrôle' },
+  trace:     { name: 'Tracé',     color: 'emerald', tag: 'Fluidité' }
+};
+
+let state = {
+  view: 'home',
+  currentExo: null,
+  currentLvl: 1,
+  game: null
+};
+
+// ============================================================
+// UI — Navigation & Dashboard
+// ============================================================
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function rankFromXp(xp) {
+  // Rank every 500 XP
+  return Math.floor(xp / 500) + 1;
+}
+
+function updateStreak() {
+  const p = Store.get('profile');
+  const today = todayKey();
+  if (p.lastSession === today) return;
+  if (!p.lastSession) { p.streak = 1; }
+  else {
+    const d1 = new Date(p.lastSession);
+    const d2 = new Date();
+    const diff = Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+    if (diff === 1) p.streak += 1;
+    else if (diff > 1) p.streak = 1;
+  }
+  p.lastSession = today;
+}
+
+function refreshDashboard() {
+  const p = Store.get('profile');
+  const daily = Store.get('daily');
+  const bests = Store.get('bests');
+
+  if (daily.date !== todayKey()) { daily.date = todayKey(); daily.count = 0; Store.save('daily'); }
+
+  $('#stat-xp').textContent = p.xp.toLocaleString('fr-FR');
+  $('#stat-streak').textContent = p.streak;
+  $('#stat-level').textContent = rankFromXp(p.xp);
+
+  const pct = Math.min(100, (daily.count / 3) * 100);
+  $('#daily-progress').style.width = pct + '%';
+  $('#daily-current').textContent = `${daily.count} / 3 séances aujourd'hui`;
+  $('#daily-status').textContent = daily.count >= 3 ? '· Objectif atteint ✓' : '· En cours';
+
+  // Greeting
+  const h = new Date().getHours();
+  const greet = h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir';
+  $('#greeting').textContent = p.xp === 0 ? 'Bienvenue' : greet;
+
+  // Best scores
+  ['speed', 'precision', 'trace'].forEach(e => {
+    const el = $(`#best-${e}`);
+    if (bests[e]) el.textContent = bests[e].score;
+    else el.textContent = '—';
+  });
+}
+
+function refreshStats() {
+  const p = Store.get('profile');
+  const history = Store.get('history');
+  $('#stats-total-xp').textContent = p.xp.toLocaleString('fr-FR');
+  $('#stats-sessions').textContent = history.length;
+  $('#stats-streak').textContent = p.streak;
+
+  const list = $('#history-list');
+  if (history.length === 0) {
+    list.innerHTML = `<div class="empty-state">Aucune séance pour le moment.<br>Commence ton premier exercice pour voir ton historique.</div>`;
+    return;
+  }
+  list.innerHTML = history.slice(0, 20).map(h => {
+    const meta = EXO_META[h.exo];
+    const d = new Date(h.ts);
+    const dateStr = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+    const timeStr = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const lvlLabel = ['DÉBUTANT', 'INTER.', 'EXPERT'][h.lvl - 1];
+    return `<div class="history-item" data-color="${meta.color}">
+      <div class="history-icon">
+        ${h.exo === 'speed' ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/></svg>'
+        : h.exo === 'precision' ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" stroke-dasharray="2 2"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>'
+        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17c2-4 4-4 6-2s4 2 6-2 4-4 6-2" stroke-linecap="round"/></svg>'}
+      </div>
+      <div class="history-info">
+        <div class="history-name">${meta.name} · ${lvlLabel}</div>
+        <div class="history-meta">${dateStr} · ${timeStr}</div>
+      </div>
+      <div class="history-score">${h.score}<small>+${h.xpGained} XP</small></div>
+    </div>`;
+  }).join('');
+}
+
+function switchView(name) {
+  state.view = name;
+  $('#view-home').classList.toggle('hidden', name !== 'home');
+  $('#view-stats').classList.toggle('hidden', name !== 'stats');
+  $('#nav-home').classList.toggle('active', name === 'home');
+  $('#nav-stats').classList.toggle('active', name === 'stats');
+  if (name === 'stats') refreshStats();
+  else refreshDashboard();
+}
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ============================================================
+// GAME ENGINE — base class
+// ============================================================
+class GameEngine {
+  constructor(exo, lvl) {
+    this.exo = exo;
+    this.lvl = lvl;
+    this.canvas = $('#game-canvas');
+    this.score = 0;
+    this.combo = 0;
+    this.bestCombo = 0;
+    this.hits = 0;
+    this.attempts = 0;
+    this.timeLeft = 60;
+    this.running = false;
+    this.timer = null;
+    this.rafId = null;
+  }
+
+  async start() {
+    this.updateHUD();
+    await this.countdown();
+    this.running = true;
+    this.onStart();
+    this.timer = setInterval(() => this.tick(), 1000);
+  }
+
+  countdown() {
+    return new Promise(resolve => {
+      const el = $('#countdown');
+      const num = $('#countdown-num');
+      el.classList.add('active');
+      let n = 3;
+      num.textContent = n;
+      Audio.countdown();
+      const iv = setInterval(() => {
+        n--;
+        if (n > 0) { num.textContent = n; Audio.countdown(); num.style.animation = 'none'; void num.offsetWidth; num.style.animation = ''; }
+        else if (n === 0) { num.textContent = 'GO'; Audio.go(); num.style.animation = 'none'; void num.offsetWidth; num.style.animation = ''; }
+        else { clearInterval(iv); el.classList.remove('active'); resolve(); }
+      }, 800);
+    });
+  }
+
+  tick() {
+    if (!this.running) return;
+    this.timeLeft--;
+    this.updateHUD();
+    if (this.timeLeft <= 5 && this.timeLeft > 0) Audio.tick();
+    if (this.timeLeft <= 0) this.finish();
+  }
+
+  updateHUD() {
+    $('#hud-score').textContent = this.score;
+    $('#hud-combo').textContent = '×' + Math.max(1, this.combo);
+    $('#hud-time').textContent = this.timeLeft;
+  }
+
+  onHit(x, y, points = 10) {
+    this.hits++;
+    this.attempts++;
+    this.combo++;
+    this.bestCombo = Math.max(this.bestCombo, this.combo);
+    const multiplier = Math.min(4, 1 + Math.floor(this.combo / 5) * 0.5);
+    const earned = Math.round(points * multiplier);
+    this.score += earned;
+    Audio.success(this.combo);
+    this.spawnFloatScore(x, y, '+' + earned);
+    this.spawnParticles(x, y);
+    if (this.combo > 0 && this.combo % 5 === 0) {
+      const banner = $('#combo-banner');
+      banner.textContent = `COMBO ×${this.combo}`;
+      banner.classList.remove('show');
+      void banner.offsetWidth;
+      banner.classList.add('show');
+      $('#combo-wrap').classList.add('active');
+      setTimeout(() => $('#combo-wrap').classList.remove('active'), 400);
+    }
+    this.updateHUD();
+  }
+
+  onMiss() {
+    this.attempts++;
+    this.combo = 0;
+    Audio.fail();
+    Audio.resetCombo();
+    this.updateHUD();
+  }
+
+  spawnFloatScore(x, y, text) {
+    const el = document.createElement('div');
+    el.className = 'float-score';
+    el.textContent = text;
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    this.canvas.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+
+  spawnParticles(x, y) {
+    const colors = ['#818cf8', '#34d399', '#fbbf24'];
+    for (let i = 0; i < 8; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = 4 + Math.random() * 4;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      p.style.background = colors[Math.floor(Math.random() * colors.length)];
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 30 + Math.random() * 50;
+      p.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+      p.style.setProperty('--dy', Math.sin(angle) * dist + 'px');
+      p.style.boxShadow = `0 0 8px ${p.style.background}`;
+      this.canvas.appendChild(p);
+      setTimeout(() => p.remove(), 800);
+    }
+  }
+
+  async finish() {
+    this.running = false;
+    clearInterval(this.timer);
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.onStop();
+
+    const accuracy = this.attempts > 0 ? Math.round((this.hits / this.attempts) * 100) : 0;
+    const xpGained = Math.round(this.score * (this.lvl === 1 ? 0.8 : this.lvl === 2 ? 1 : 1.3));
+
+    // Update profile
+    updateStreak();
+    const p = Store.get('profile');
+    const prevLevel = rankFromXp(p.xp);
+    p.xp += xpGained;
+    const newLevel = rankFromXp(p.xp);
+    await Store.save('profile');
+
+    // Save history
+    const history = Store.get('history');
+    history.unshift({
+      exo: this.exo,
+      lvl: this.lvl,
+      score: this.score,
+      xpGained,
+      accuracy,
+      bestCombo: this.bestCombo,
+      ts: Date.now()
+    });
+    if (history.length > 100) history.pop();
+    await Store.save('history');
+
+    // Update bests
+    const bests = Store.get('bests');
+    if (!bests[this.exo] || this.score > bests[this.exo].score) {
+      bests[this.exo] = { score: this.score, lvl: this.lvl, ts: Date.now() };
+      await Store.save('bests');
+    }
+
+    // Update daily
+    const daily = Store.get('daily');
+    if (daily.date !== todayKey()) { daily.date = todayKey(); daily.count = 0; }
+    daily.count++;
+    await Store.save('daily');
+
+    // Show game over
+    $('#go-score').textContent = this.score;
+    $('#go-xp').textContent = `+${xpGained} XP`;
+    $('#go-accuracy').textContent = accuracy + '%';
+    $('#go-combo').textContent = '×' + this.bestCombo;
+    $('#game-over').classList.add('active');
+
+    if (newLevel > prevLevel) {
+      Audio.levelUp();
+      setTimeout(() => toast(`🎉 Nouveau rang atteint : ${newLevel}`), 600);
+    } else if (daily.count === 3) {
+      setTimeout(() => toast('🔥 Objectif quotidien atteint !'), 400);
+    }
+  }
+
+  cleanup() {
+    this.running = false;
+    clearInterval(this.timer);
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.onStop();
+    this.canvas.innerHTML = `
+      <div class="countdown" id="countdown"><div class="countdown-num" id="countdown-num">3</div></div>
+      <div class="combo-banner" id="combo-banner"></div>
+      <svg id="trace-svg" class="hidden"></svg>
+      <div class="game-over" id="game-over">
+        <div class="game-over-card">
+          <div class="go-label">Session terminée</div>
+          <div class="go-score" id="go-score">0</div>
+          <div class="go-xp" id="go-xp">+0 XP</div>
+          <div class="go-stats">
+            <div class="go-stat"><div class="go-stat-val" id="go-accuracy">0%</div><div class="go-stat-label">Précision</div></div>
+            <div class="go-stat"><div class="go-stat-val" id="go-combo">×1</div><div class="go-stat-label">Meilleur combo</div></div>
+          </div>
+          <div class="go-actions">
+            <button class="btn btn-secondary" id="go-quit">Quitter</button>
+            <button class="btn btn-primary" id="go-replay">Rejouer</button>
+          </div>
+        </div>
+      </div>`;
+    bindGameOverButtons();
+  }
+
+  onStart() {}
+  onStop() {}
+}
+
+// ============================================================
+// MODULE A — SPEED (tap targets)
+// ============================================================
+class SpeedGame extends GameEngine {
+  constructor(lvl) {
+    super('speed', lvl);
+    const cfg = {
+      1: { size: 90, life: 2500, spawnInterval: 900, maxActive: 2 },
+      2: { size: 65, life: 1700, spawnInterval: 700, maxActive: 3 },
+      3: { size: 45, life: 1100, spawnInterval: 500, maxActive: 4 }
+    };
+    this.cfg = cfg[lvl];
+    this.active = new Set();
+    this.spawnTimer = null;
+    this._clickHandler = null;
+  }
+
+  onStart() {
+    this._clickHandler = (e) => {
+      // Click on empty space counts as miss
+      if (e.target === this.canvas || e.target.id === 'trace-svg') {
+        this.onMiss();
+      }
+    };
+    this.canvas.addEventListener('pointerdown', this._clickHandler);
+
+    this.spawnTimer = setInterval(() => {
+      if (!this.running) return;
+      if (this.active.size < this.cfg.maxActive) this.spawnTarget();
+    }, this.cfg.spawnInterval);
+    // Initial spawn
+    this.spawnTarget();
+  }
+
+  onStop() {
+    if (this.spawnTimer) clearInterval(this.spawnTimer);
+    if (this._clickHandler) this.canvas.removeEventListener('pointerdown', this._clickHandler);
+    this.active.clear();
+  }
+
+  spawnTarget() {
+    if (!this.running) return;
+    const rect = this.canvas.getBoundingClientRect();
+    const size = this.cfg.size;
+    const pad = size / 2 + 10;
+    const x = pad + Math.random() * (rect.width - pad * 2);
+    const y = pad + Math.random() * (rect.height - pad * 2);
+
+    const t = document.createElement('div');
+    t.className = 'target';
+    t.style.width = size + 'px';
+    t.style.height = size + 'px';
+    t.style.left = x + 'px';
+    t.style.top = y + 'px';
+
+    this.active.add(t);
+    this.canvas.appendChild(t);
+
+    const timeout = setTimeout(() => {
+      if (this.active.has(t)) {
+        t.classList.add('miss');
+        this.active.delete(t);
+        this.onMiss();
+        setTimeout(() => t.remove(), 300);
+      }
+    }, this.cfg.life);
+
+    t.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      if (!this.running || !this.active.has(t)) return;
+      clearTimeout(timeout);
+      this.active.delete(t);
+      t.classList.add('hit');
+      const rect2 = t.getBoundingClientRect();
+      const canvasRect = this.canvas.getBoundingClientRect();
+      this.onHit(
+        rect2.left + rect2.width/2 - canvasRect.left,
+        rect2.top + rect2.height/2 - canvasRect.top,
+        10 + (3 - this.lvl === 0 ? 5 : 0) + this.lvl * 5
+      );
+      setTimeout(() => t.remove(), 300);
+    });
+  }
+}
+
+// ============================================================
+// MODULE B — PRECISION (drag puck to target, hold)
+// ============================================================
+class PrecisionGame extends GameEngine {
+  constructor(lvl) {
+    super('precision', lvl);
+    const cfg = {
+      1: { targetSize: 110, holdTime: 400, tolerance: 20 },
+      2: { targetSize: 80,  holdTime: 700, tolerance: 12 },
+      3: { targetSize: 55,  holdTime: 1000, tolerance: 6 }
+    };
+    this.cfg = cfg[lvl];
+    this.puckPos = { x: 0, y: 0 };
+    this.targetPos = { x: 0, y: 0 };
+    this.dragging = false;
+    this.holdStart = null;
+    this.puck = null;
+    this.target = null;
+    this.holdProgress = null;
+  }
+
+  onStart() {
+    this.placeNew();
+    this._ptrDown = (e) => this.startDrag(e);
+    this._ptrMove = (e) => this.drag(e);
+    this._ptrUp = (e) => this.endDrag(e);
+    this.canvas.addEventListener('pointerdown', this._ptrDown);
+    window.addEventListener('pointermove', this._ptrMove);
+    window.addEventListener('pointerup', this._ptrUp);
+    window.addEventListener('pointercancel', this._ptrUp);
+  }
+
+  onStop() {
+    if (this._ptrDown) this.canvas.removeEventListener('pointerdown', this._ptrDown);
+    window.removeEventListener('pointermove', this._ptrMove);
+    window.removeEventListener('pointerup', this._ptrUp);
+    window.removeEventListener('pointercancel', this._ptrUp);
+  }
+
+  placeNew() {
+    const rect = this.canvas.getBoundingClientRect();
+    const pad = 80;
+    // Random puck position
+    this.puckPos = {
+      x: pad + Math.random() * (rect.width - pad * 2),
+      y: pad + Math.random() * (rect.height - pad * 2)
+    };
+    // Random target, min distance from puck
+    let tx, ty, tries = 0;
+    do {
+      tx = pad + Math.random() * (rect.width - pad * 2);
+      ty = pad + Math.random() * (rect.height - pad * 2);
+      tries++;
+    } while (Math.hypot(tx - this.puckPos.x, ty - this.puckPos.y) < 200 && tries < 20);
+    this.targetPos = { x: tx, y: ty };
+
+    // Clear existing
+    if (this.puck) this.puck.remove();
+    if (this.target) this.target.remove();
+    if (this.holdProgress) this.holdProgress.remove();
+
+    // Create target
+    this.target = document.createElement('div');
+    this.target.className = 'precision-target';
+    this.target.style.width = this.cfg.targetSize + 'px';
+    this.target.style.height = this.cfg.targetSize + 'px';
+    this.target.style.left = this.targetPos.x + 'px';
+    this.target.style.top = this.targetPos.y + 'px';
+    this.canvas.appendChild(this.target);
+
+    // Progress ring
+    const progSize = this.cfg.targetSize + 16;
+    this.holdProgress = document.createElement('div');
+    this.holdProgress.className = 'hold-progress';
+    this.holdProgress.style.width = progSize + 'px';
+    this.holdProgress.style.height = progSize + 'px';
+    this.holdProgress.style.left = this.targetPos.x + 'px';
+    this.holdProgress.style.top = this.targetPos.y + 'px';
+    this.holdProgress.innerHTML = `<svg width="${progSize}" height="${progSize}" viewBox="0 0 ${progSize} ${progSize}">
+      <circle cx="${progSize/2}" cy="${progSize/2}" r="${progSize/2 - 2}" fill="none" stroke="#10b981" stroke-width="3"
+        stroke-dasharray="${Math.PI * (progSize - 4)}" stroke-dashoffset="${Math.PI * (progSize - 4)}"
+        stroke-linecap="round" id="hold-circle"/>
+    </svg>`;
+    this.canvas.appendChild(this.holdProgress);
+
+    // Create puck
+    this.puck = document.createElement('div');
+    this.puck.className = 'puck';
+    this.puck.style.left = this.puckPos.x + 'px';
+    this.puck.style.top = this.puckPos.y + 'px';
+    this.puck.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></svg>`;
+    this.canvas.appendChild(this.puck);
+    this.holdStart = null;
+    this.target.classList.remove('holding');
+    this.updateHoldProgress(0);
+  }
+
+  startDrag(e) {
+    if (!this.running) return;
+    const rect = this.puck.getBoundingClientRect();
+    const canvasRect = this.canvas.getBoundingClientRect();
+    const px = e.clientX - canvasRect.left;
+    const py = e.clientY - canvasRect.top;
+    const dx = px - this.puckPos.x;
+    const dy = py - this.puckPos.y;
+    if (Math.hypot(dx, dy) <= 35) {
+      this.dragging = true;
+      this.puck.classList.add('dragging');
+      this.dragOffset = { x: dx, y: dy };
+      if (this.puck.setPointerCapture) {
+        try { this.puck.setPointerCapture(e.pointerId); } catch(_) {}
+      }
+    }
+  }
+
+  drag(e) {
+    if (!this.dragging || !this.running) return;
+    const canvasRect = this.canvas.getBoundingClientRect();
+    const px = e.clientX - canvasRect.left - this.dragOffset.x;
+    const py = e.clientY - canvasRect.top - this.dragOffset.y;
+    this.puckPos.x = Math.max(30, Math.min(canvasRect.width - 30, px));
+    this.puckPos.y = Math.max(30, Math.min(canvasRect.height - 30, py));
+    this.puck.style.left = this.puckPos.x + 'px';
+    this.puck.style.top = this.puckPos.y + 'px';
+
+    const dist = Math.hypot(this.puckPos.x - this.targetPos.x, this.puckPos.y - this.targetPos.y);
+    const threshold = this.cfg.tolerance;
+    if (dist <= threshold) {
+      if (!this.holdStart) {
+        this.holdStart = Date.now();
+        this.target.classList.add('holding');
+      }
+      const elapsed = Date.now() - this.holdStart;
+      const progress = Math.min(1, elapsed / this.cfg.holdTime);
+      this.updateHoldProgress(progress);
+      if (elapsed >= this.cfg.holdTime) {
+        this.onHit(this.targetPos.x, this.targetPos.y, 20 + this.lvl * 10);
+        this.dragging = false;
+        this.puck.classList.remove('dragging');
+        this.placeNew();
+      }
+    } else {
+      if (this.holdStart) {
+        this.holdStart = null;
+        this.target.classList.remove('holding');
+        this.updateHoldProgress(0);
+      }
+    }
+  }
+
+  updateHoldProgress(p) {
+    const circle = this.holdProgress?.querySelector('#hold-circle');
+    if (!circle) return;
+    const size = this.cfg.targetSize + 16;
+    const circ = Math.PI * (size - 4);
+    circle.setAttribute('stroke-dashoffset', circ * (1 - p));
+  }
+
+  endDrag(e) {
+    if (this.dragging) {
+      this.dragging = false;
+      this.puck?.classList.remove('dragging');
+      if (this.holdStart) {
+        // Released before completion → mini miss
+        this.holdStart = null;
+        this.target?.classList.remove('holding');
+        this.updateHoldProgress(0);
+      }
+    }
+  }
+}
+
+// ============================================================
+// MODULE C — TRACE (follow path with finger)
+// ============================================================
+class TraceGame extends GameEngine {
+  constructor(lvl) {
+    super('trace', lvl);
+    const cfg = {
+      1: { strokeWidth: 40, tolerance: 35, speed: 1 },
+      2: { strokeWidth: 26, tolerance: 22, speed: 1.3 },
+      3: { strokeWidth: 16, tolerance: 12, speed: 1.6 }
+    };
+    this.cfg = cfg[lvl];
+    this.svg = null;
+    this.pathEl = null;
+    this.progressEl = null;
+    this.pointerEl = null;
+    this.pathLength = 0;
+    this.progress = 0;
+    this.tracking = false;
+    this.lastValidPoint = null;
+    this.pathData = null;
+    this.pathSampled = [];
+  }
+
+  onStart() {
+    this.svg = $('#trace-svg');
+    this.svg.classList.remove('hidden');
+    this.generatePath();
+    this._ptrDown = (e) => this.startTrace(e);
+    this._ptrMove = (e) => this.moveTrace(e);
+    this._ptrUp = (e) => this.endTrace(e);
+    this.canvas.addEventListener('pointerdown', this._ptrDown);
+    window.addEventListener('pointermove', this._ptrMove);
+    window.addEventListener('pointerup', this._ptrUp);
+    window.addEventListener('pointercancel', this._ptrUp);
+  }
+
+  onStop() {
+    if (this.svg) this.svg.classList.add('hidden');
+    if (this._ptrDown) this.canvas.removeEventListener('pointerdown', this._ptrDown);
+    window.removeEventListener('pointermove', this._ptrMove);
+    window.removeEventListener('pointerup', this._ptrUp);
+    window.removeEventListener('pointercancel', this._ptrUp);
+  }
+
+  generatePath() {
+    const rect = this.canvas.getBoundingClientRect();
+    const W = rect.width, H = rect.height;
+    this.svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    this.svg.innerHTML = '';
+
+    // Generate a random smooth path using cubic beziers
+    const pad = 60;
+    const points = [];
+    const segments = 3 + Math.floor(Math.random() * 2);
+    points.push({ x: pad + Math.random() * 100, y: pad + Math.random() * (H - pad * 2) });
+    for (let i = 1; i <= segments; i++) {
+      points.push({
+        x: (W / segments) * i - 40 + Math.random() * 80,
+        y: pad + Math.random() * (H - pad * 2)
+      });
+    }
+
+    let d = `M ${points[0].x} ${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1];
+      const curr = points[i];
+      const cp1x = prev.x + (curr.x - prev.x) * 0.5;
+      const cp1y = prev.y + (Math.random() - 0.5) * H * 0.4;
+      const cp2x = prev.x + (curr.x - prev.x) * 0.5;
+      const cp2y = curr.y + (Math.random() - 0.5) * H * 0.4;
+      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr.x} ${curr.y}`;
+    }
+
+    this.pathData = d;
+
+    // Background track
+    const track = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    track.setAttribute('d', d);
+    track.setAttribute('stroke', 'rgba(255,255,255,0.08)');
+    track.setAttribute('stroke-width', this.cfg.strokeWidth);
+    track.setAttribute('fill', 'none');
+    track.setAttribute('stroke-linecap', 'round');
+    track.setAttribute('stroke-linejoin', 'round');
+    this.svg.appendChild(track);
+
+    // Guide line (dashed)
+    const guide = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    guide.setAttribute('d', d);
+    guide.setAttribute('stroke', 'rgba(16, 185, 129, 0.4)');
+    guide.setAttribute('stroke-width', '2');
+    guide.setAttribute('fill', 'none');
+    guide.setAttribute('stroke-dasharray', '6 4');
+    this.svg.appendChild(guide);
+
+    // Progress path (the one that lights up)
+    this.progressEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    this.progressEl.setAttribute('d', d);
+    this.progressEl.setAttribute('stroke', 'url(#trace-gradient)');
+    this.progressEl.setAttribute('stroke-width', this.cfg.strokeWidth - 6);
+    this.progressEl.setAttribute('fill', 'none');
+    this.progressEl.setAttribute('stroke-linecap', 'round');
+    this.progressEl.setAttribute('stroke-linejoin', 'round');
+
+    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    defs.innerHTML = `<linearGradient id="trace-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>`;
+    this.svg.appendChild(defs);
+    this.svg.appendChild(this.progressEl);
+
+    this.pathLength = this.progressEl.getTotalLength();
+    this.progressEl.style.strokeDasharray = this.pathLength;
+    this.progressEl.style.strokeDashoffset = this.pathLength;
+    this.progressEl.style.filter = 'drop-shadow(0 0 8px rgba(99,102,241,0.6))';
+
+    // Start marker
+    const start = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    start.setAttribute('cx', points[0].x);
+    start.setAttribute('cy', points[0].y);
+    start.setAttribute('r', this.cfg.strokeWidth / 2 + 4);
+    start.setAttribute('fill', 'none');
+    start.setAttribute('stroke', '#10b981');
+    start.setAttribute('stroke-width', '3');
+    start.setAttribute('id', 'trace-start');
+    this.svg.appendChild(start);
+
+    // Pulsing indicator at start
+    const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    pulse.setAttribute('cx', points[0].x);
+    pulse.setAttribute('cy', points[0].y);
+    pulse.setAttribute('r', '8');
+    pulse.setAttribute('fill', '#34d399');
+    pulse.innerHTML = `<animate attributeName="r" values="8;14;8" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.3;1" dur="1.5s" repeatCount="indefinite"/>`;
+    this.svg.appendChild(pulse);
+    this.startMarker = pulse;
+
+    // End marker
+    const endPoint = points[points.length - 1];
+    const end = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    end.setAttribute('cx', endPoint.x);
+    end.setAttribute('cy', endPoint.y);
+    end.setAttribute('r', this.cfg.strokeWidth / 2 + 4);
+    end.setAttribute('fill', 'none');
+    end.setAttribute('stroke', '#f59e0b');
+    end.setAttribute('stroke-width', '3');
+    end.setAttribute('stroke-dasharray', '4 3');
+    this.svg.appendChild(end);
+
+    // Sample points along path for proximity detection
+    this.pathSampled = [];
+    const samples = 300;
+    for (let i = 0; i <= samples; i++) {
+      const pt = this.progressEl.getPointAtLength((i / samples) * this.pathLength);
+      this.pathSampled.push({ x: pt.x, y: pt.y, t: i / samples });
+    }
+
+    this.progress = 0;
+    this.tracking = false;
+    this.lastValidPoint = null;
+    this.startPoint = points[0];
+    this.endPoint = endPoint;
+  }
+
+  getPointerPos(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  startTrace(e) {
+    if (!this.running) return;
+    const pos = this.getPointerPos(e);
+    const dist = Math.hypot(pos.x - this.startPoint.x, pos.y - this.startPoint.y);
+    if (dist <= this.cfg.strokeWidth / 2 + 10) {
+      this.tracking = true;
+      this.progress = 0;
+      if (this.startMarker) this.startMarker.style.display = 'none';
+    }
+  }
+
+  moveTrace(e) {
+    if (!this.tracking || !this.running) return;
+    const pos = this.getPointerPos(e);
+
+    // Find closest sampled point AHEAD of current progress
+    let bestIdx = -1;
+    let bestDist = Infinity;
+    const currentIdx = Math.floor(this.progress * this.pathSampled.length);
+    // Only check points near current progress (don't allow jumping ahead or back too far)
+    const window = 30;
+    const minSearch = Math.max(0, currentIdx - 5);
+    const maxSearch = Math.min(this.pathSampled.length - 1, currentIdx + window);
+    for (let i = minSearch; i <= maxSearch; i++) {
+      const pt = this.pathSampled[i];
+      const d = Math.hypot(pos.x - pt.x, pos.y - pt.y);
+      if (d < bestDist) { bestDist = d; bestIdx = i; }
+    }
+
+    if (bestDist <= this.cfg.tolerance + this.cfg.strokeWidth / 2) {
+      const newProgress = this.pathSampled[bestIdx].t;
+      if (newProgress > this.progress) {
+        this.progress = newProgress;
+        this.progressEl.style.strokeDashoffset = this.pathLength * (1 - this.progress);
+      }
+      // Reach the end
+      if (this.progress >= 0.97) {
+        this.progress = 1;
+        this.progressEl.style.strokeDashoffset = 0;
+        this.onHit(this.endPoint.x, this.endPoint.y, 30 + this.lvl * 15);
+        this.tracking = false;
+        setTimeout(() => {
+          if (this.running) this.generatePath();
+        }, 400);
+      }
+    } else {
+      // Out of tolerance — reset but don't penalize brutally
+      if (this.progress > 0.1) {
+        this.onMiss();
+        this.tracking = false;
+        this.progress = 0;
+        this.progressEl.style.strokeDashoffset = this.pathLength;
+        if (this.startMarker) this.startMarker.style.display = '';
+      }
+    }
+  }
+
+  endTrace(e) {
+    if (this.tracking) {
+      this.tracking = false;
+      if (this.progress > 0.1 && this.progress < 0.97) {
+        this.onMiss();
+      }
+      this.progress = 0;
+      if (this.progressEl) this.progressEl.style.strokeDashoffset = this.pathLength;
+      if (this.startMarker) this.startMarker.style.display = '';
+    }
+  }
+}
+
+// ============================================================
+// FLOW — open difficulty, launch game
+// ============================================================
+function openDifficulty(exo) {
+  state.currentExo = exo;
+  $('#modal-exo-name').textContent = `${EXO_META[exo].name} · Choisir le niveau`;
+  $('#modal-difficulty').classList.add('active');
+}
+
+function startGame(exo, lvl) {
+  state.currentExo = exo;
+  state.currentLvl = lvl;
+  $('#modal-difficulty').classList.remove('active');
+  $('#game-view').classList.add('active');
+
+  let game;
+  if (exo === 'speed') game = new SpeedGame(lvl);
+  else if (exo === 'precision') game = new PrecisionGame(lvl);
+  else if (exo === 'trace') game = new TraceGame(lvl);
+  state.game = game;
+  Audio.init();
+  game.start();
+}
+
+function quitGame() {
+  if (state.game) {
+    state.game.cleanup();
+    state.game = null;
+  }
+  $('#game-view').classList.remove('active');
+  switchView(state.view === 'stats' ? 'stats' : 'home');
+}
+
+function bindGameOverButtons() {
+  const replayBtn = $('#go-replay');
+  const quitBtn = $('#go-quit');
+  if (replayBtn) replayBtn.addEventListener('click', () => {
+    $('#game-over').classList.remove('active');
+    const exo = state.currentExo, lvl = state.currentLvl;
+    if (state.game) state.game.cleanup();
+    startGame(exo, lvl);
+  });
+  if (quitBtn) quitBtn.addEventListener('click', quitGame);
+}
+
+// ============================================================
+// EVENT BINDINGS
+// ============================================================
+async function init() {
+  await Store.load();
+  refreshDashboard();
+
+  $('#nav-home').addEventListener('click', () => switchView('home'));
+  $('#nav-stats').addEventListener('click', () => switchView('stats'));
+
+  $$('.exo-card').forEach(card => {
+    card.addEventListener('click', () => openDifficulty(card.dataset.exo));
+  });
+
+  $$('.level-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const lvl = parseInt(opt.dataset.lvl, 10);
+      startGame(state.currentExo, lvl);
+    });
+  });
+
+  $('#modal-cancel').addEventListener('click', () => {
+    $('#modal-difficulty').classList.remove('active');
+  });
+  $('#modal-difficulty').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-difficulty') $('#modal-difficulty').classList.remove('active');
+  });
+
+  $('#quit-btn').addEventListener('click', () => {
+    if (state.game && state.game.running) {
+      if (confirm('Quitter la séance ? Ta progression ne sera pas enregistrée.')) {
+        state.game.running = false;
+        quitGame();
+      }
+    } else {
+      quitGame();
+    }
+  });
+
+  bindGameOverButtons();
+
+  // Prevent default touch behaviors on game canvas
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+}
+
+init();
+</script>
+</body>
+</html>
